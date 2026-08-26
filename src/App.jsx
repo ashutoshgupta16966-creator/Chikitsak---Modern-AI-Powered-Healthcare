@@ -1,21 +1,21 @@
 import { useState, useCallback, useEffect } from 'react'
 import { analyzeImage, fileToBase64 } from './api/client'
-import ScannerCard          from './components/ScannerCard'
-import IdentityCard         from './components/IdentityCard'
-import SolutionCard         from './components/SolutionCard'
-import ScanHistoryDashboard from './components/ScanHistoryDashboard'
 import AppHeader            from './components/AppHeader'
+import HeroIntroCard        from './components/HeroIntroCard'
+import ScannerCard          from './components/ScannerCard'
+import ScanHistoryDashboard from './components/ScanHistoryDashboard'
+import ResultView           from './components/ResultView'
 import ErrorBanner          from './components/ErrorBanner'
 
 const HISTORY_KEY = 'chikitsak_history'
 
 export default function App() {
-  const [appState,     setAppState]     = useState('idle') // 'idle' | 'loading' | 'result' | 'error'
-  const [imageUrl,     setImageUrl]     = useState(null)
-  const [analysis,     setAnalysis]     = useState(null)
-  const [error,        setError]        = useState(null)
-  const [history,      setHistory]      = useState([])
-  const [showHistory,  setShowHistory]  = useState(false)
+  const [appState, setAppState]       = useState('idle') // 'idle' | 'loading' | 'result' | 'error'
+  const [imageUrl, setImageUrl]       = useState(null)
+  const [analysis, setAnalysis]       = useState(null)
+  const [error, setError]             = useState(null)
+  const [history, setHistory]         = useState([])
+  const [showHistory, setShowHistory] = useState(false)
 
   // ── Load history from localStorage on mount ────────────────────────────
   useEffect(() => {
@@ -25,27 +25,26 @@ export default function App() {
         setHistory(JSON.parse(saved))
       }
     } catch (err) {
-      console.warn('Failed to read scan history from localStorage:', err)
+      console.warn('Failed to load history from localStorage:', err)
     }
   }, [])
 
   // ── Save scan to history ────────────────────────────────────────────────
   const saveToHistory = useCallback((scanData, previewUri) => {
     const newItem = {
-      id:          Date.now().toString(),
-      timestamp:   new Date().toISOString(),
-      previewUri:  previewUri || null,
+      id:         Date.now().toString(),
+      timestamp:  new Date().toISOString(),
+      previewUri: previewUri || null,
       ...scanData,
     }
 
     setHistory((prev) => {
-      // Filter out duplicate by englishName if scanned recently
       const filtered = prev.filter((item) => item.englishName !== scanData.englishName)
-      const updated  = [newItem, ...filtered].slice(0, 20) // Keep last 20
+      const updated  = [newItem, ...filtered].slice(0, 25)
       try {
         localStorage.setItem(HISTORY_KEY, JSON.stringify(updated))
       } catch (err) {
-        console.warn('Failed to save to localStorage:', err)
+        console.warn('Failed to save history to localStorage:', err)
       }
       return updated
     })
@@ -61,7 +60,7 @@ export default function App() {
     setHistory([])
   }, [])
 
-  // ── Image selected callback ─────────────────────────────────────────────
+  // ── Image Selection Handler ─────────────────────────────────────────────
   const handleImageSelected = useCallback(async (file) => {
     if (imageUrl) URL.revokeObjectURL(imageUrl)
 
@@ -81,14 +80,14 @@ export default function App() {
       // Save to localStorage history
       saveToHistory(result, preview)
     } catch (err) {
-      console.error('[App] Analysis failed:', err)
-      setError(err.message || 'Something went wrong while analyzing image. Please try again.')
+      console.error('[App] Image analysis error:', err)
+      setError(err.message || 'Failed to analyze medicine image. Please try again.')
       setAppState('error')
     }
   }, [imageUrl, saveToHistory])
 
-  // ── Reset to main state ─────────────────────────────────────────────────
-  const handleReset = useCallback(() => {
+  // ── Reset back to clean Home Screen ────────────────────────────────────
+  const handleGoHome = useCallback(() => {
     if (imageUrl) URL.revokeObjectURL(imageUrl)
     setImageUrl(null)
     setAnalysis(null)
@@ -107,105 +106,108 @@ export default function App() {
     setAppState('result')
   }, [])
 
-  // ── 1-Click WhatsApp Share Formatter ────────────────────────────────────
+  // ── 1-Click WhatsApp Share ──────────────────────────────────────────────
   const handleShareWhatsApp = useCallback(() => {
     if (!analysis) return
 
     const expiryStatusText = analysis.expiryStatus === 'RED'
-      ? '🔴 तुरंत बदलें / EXPIRED'
+      ? '🔴 EXPIRED / तुरंत बदलें'
       : analysis.expiryStatus === 'YELLOW'
-      ? '🟡 ध्यान दें / Use Soon'
-      : '🟢 Safe to Use / सुरक्षित'
+      ? '🟡 EXPIRING SOON / ध्यान दें'
+      : '🟢 SAFE TO USE / सुरक्षित'
 
     const warningsFormatted = (analysis.warnings || [])
       .map((w) => `• ${w}`)
       .join('\n')
 
-    const message = `🏥 *Chikitsak (चिकित्सक) Medical Scanner Report*
+    const message = `🏥 *Chikitsak (चिकित्सक) AI Medical Report*
 ----------------------------------------
-💊 *Medicine:* ${analysis.englishName}
-🇮🇳 *नाम:* ${analysis.hindiName}
-⏳ *Expiry Status:* ${expiryStatusText} (${analysis.expiryDate || 'N/A'})
+💊 *Medicine:* ${analysis.englishName} (${analysis.hindiName})
+⏳ *Status:* ${expiryStatusText}
+📅 *Expiry Date:* ${analysis.expiryDate || 'N/A'}
 
-🏥 *Illness / उपयोग:*
-${analysis.bimari}
+🏥 *Targeted Illness / उपयोग:*
+${analysis.bimariEn || analysis.bimari}
 
-💡 *Dosage & Instructions / खुराक:*
-${analysis.solution}
+💡 *Dosage Instructions / खुराक:*
+${analysis.solutionEn || analysis.solution}
 
-⚠️ *Safety Caution / सावधानियां:*
+⚠️ *Safety Precautions / सावधानियां:*
 ${warningsFormatted || '• Use as advised by doctor'}
 ----------------------------------------
-✨ *Scanned with Chikitsak AI Assistant*`
+✨ *Scanned with Chikitsak AI Medical Assistant*`
 
     const encoded = encodeURIComponent(message)
     window.open(`https://api.whatsapp.com/send?text=${encoded}`, '_blank')
   }, [analysis])
 
   return (
-    <div className="flex flex-col h-screen w-full max-w-md mx-auto bg-gradient-to-b from-emerald-950 via-teal-950 to-slate-950 overflow-hidden select-none relative">
+    <div className="flex flex-col h-screen w-full max-w-md mx-auto bg-gradient-to-b from-slate-950 via-emerald-950 to-slate-950 overflow-hidden select-none relative font-sans text-gray-100">
 
-      {/* Background ambient glowing light spots */}
-      <div className="absolute top-10 left-10 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-10 right-10 w-48 h-48 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
+      {/* Ambient background glows */}
+      <div className="absolute top-12 left-8 w-44 h-44 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-12 right-8 w-44 h-44 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
 
       {/* ── App Header ────────────────────────────────────────────── */}
       <AppHeader
-        onReset={handleReset}
-        hasResult={appState === 'result'}
+        onGoHome={handleGoHome}
+        isResultView={appState === 'result'}
         historyCount={history.length}
         showHistory={showHistory}
         onToggleHistory={() => setShowHistory((prev) => !prev)}
       />
 
-      {/* ── Error Banner ──────────────────────────────────────────── */}
+      {/* ── Error Notification Banner ─────────────────────────────── */}
       {error && (
         <ErrorBanner message={error} onDismiss={() => setError(null)} />
       )}
 
-      {/* ── Main Viewport Content ─────────────────────────────────── */}
-      <main className="flex flex-col flex-1 gap-2 p-2.5 overflow-hidden relative z-10">
-        {showHistory ? (
-          /* History View Dashboard */
-          <div className="h-full">
-            <ScanHistoryDashboard
-              history={history}
-              onSelectHistoryItem={handleSelectHistoryItem}
-              onClearHistory={handleClearHistory}
-              onNewScan={() => setShowHistory(false)}
-            />
-          </div>
+      {/* ── Main Viewport Area ────────────────────────────────────── */}
+      <main className="flex-1 min-h-0 overflow-hidden relative z-10 flex flex-col">
+
+        {appState === 'result' && analysis ? (
+          /* ── DEDICATED FULL RESULT VIEW ─────────────────────────── */
+          <ResultView
+            analysis={analysis}
+            imageUrl={imageUrl}
+            onBackToHome={handleGoHome}
+            onShareWhatsApp={handleShareWhatsApp}
+            onNewScan={handleGoHome}
+          />
         ) : (
-          /* 3-Card Medical Scanner Layout */
-          <>
-            {/* TOP CARD – 28% Viewport */}
-            <div className="h-[28%] min-h-0">
-              <ScannerCard
-                imageUrl={imageUrl}
-                isLoading={appState === 'loading'}
-                onImageSelected={handleImageSelected}
+          /* ── CLEAN HOMEPAGE VIEW ───────────────────────────────── */
+          <div className="card-scroll flex-1 p-3 space-y-3">
+            {showHistory ? (
+              /* History Dashboard View */
+              <ScanHistoryDashboard
+                history={history}
+                onSelectHistoryItem={handleSelectHistoryItem}
+                onClearHistory={handleClearHistory}
+                onNewScan={() => setShowHistory(false)}
               />
-            </div>
+            ) : (
+              /* Clean Home View */
+              <>
+                {/* 1. Hero Intro Card */}
+                <HeroIntroCard onScanClick={() => {}} />
 
-            {/* MIDDLE CARD – 28% Viewport */}
-            <div className="h-[28%] min-h-0">
-              <IdentityCard
-                analysis={analysis}
-                isLoading={appState === 'loading'}
-                isIdle={appState === 'idle'}
-                onShareWhatsApp={handleShareWhatsApp}
-              />
-            </div>
+                {/* 2. Main Scan Trigger Card (Dual Camera/Gallery Modal) */}
+                <ScannerCard
+                  imageUrl={imageUrl}
+                  isLoading={appState === 'loading'}
+                  onImageSelected={handleImageSelected}
+                />
 
-            {/* BOTTOM CARD – 44% Viewport */}
-            <div className="h-[44%] min-h-0">
-              <SolutionCard
-                analysis={analysis}
-                isLoading={appState === 'loading'}
-                isIdle={appState === 'idle'}
-              />
-            </div>
-          </>
+                {/* 3. Scan History Dashboard Section */}
+                <ScanHistoryDashboard
+                  history={history}
+                  onSelectHistoryItem={handleSelectHistoryItem}
+                  onClearHistory={handleClearHistory}
+                  onNewScan={() => {}}
+                />
+              </>
+            )}
+          </div>
         )}
       </main>
     </div>

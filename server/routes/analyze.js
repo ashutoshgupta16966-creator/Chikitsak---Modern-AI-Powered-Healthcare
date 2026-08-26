@@ -4,29 +4,15 @@ import { analyzeMedicineImage } from '../services/geminiService.js';
 const router = express.Router();
 
 // ── POST /api/analyze ──────────────────────────────────────────────────────
-/**
- * Accepts a base64-encoded image and returns structured medicine analysis.
- *
- * Request body:
- *   { "image": "data:image/jpeg;base64,/9j/4AAQ..." }  ← full data URI
- *   OR
- *   { "image": "/9j/4AAQ...", "mimeType": "image/jpeg" }  ← raw base64
- *
- * Response (200):
- *   { "success": true, "data": { ...MedicineAnalysis } }
- *
- * Response (4xx/5xx):
- *   { "success": false, "error": "message" }
- */
-router.post('/analyze', async (req, res, next) => {
+router.post('/analyze', async (req, res) => {
   try {
-    const { image, mimeType: clientMime } = req.body;
+    const { image, mimeType: clientMime } = req.body || {};
 
     // ── Validate input ──────────────────────────────────────────────────
     if (!image || typeof image !== 'string') {
       return res.status(400).json({
         success: false,
-        error: 'Missing or invalid "image" field. Provide a base64 string or data URI.',
+        error: 'Missing or invalid image payload. Please select or capture a medicine photo.',
       });
     }
 
@@ -39,7 +25,7 @@ router.post('/analyze', async (req, res, next) => {
       if (!matches) {
         return res.status(400).json({
           success: false,
-          error: 'Invalid data URI format. Expected data:<mimeType>;base64,<data>',
+          error: 'Invalid image format. Expected valid base64 data URI.',
         });
       }
       mimeType   = matches[1];
@@ -51,40 +37,44 @@ router.post('/analyze', async (req, res, next) => {
     if (!allowedTypes.includes(mimeType.toLowerCase())) {
       return res.status(400).json({
         success: false,
-        error: `Unsupported image type: ${mimeType}. Allowed: ${allowedTypes.join(', ')}`,
+        error: `Unsupported image format (${mimeType}). Please upload JPG, PNG, WEBP, or HEIC image.`,
       });
     }
 
-    // ── Rough size check (~10MB decoded limit) ─────────────────────────
+    // ── Size check (~12MB decoded limit) ───────────────────────────────
     const approximateBytes = (base64Data.length * 3) / 4;
-    if (approximateBytes > 10 * 1024 * 1024) {
+    if (approximateBytes > 12 * 1024 * 1024) {
       return res.status(413).json({
         success: false,
-        error: 'Image too large. Maximum allowed size is 10MB.',
+        error: 'Image size too large. Please upload an image under 10MB.',
       });
     }
 
-    // ── Call Gemini ────────────────────────────────────────────────────
-    console.log(`[/api/analyze] Processing image | type=${mimeType} | ~${(approximateBytes / 1024).toFixed(1)}KB`);
+    // ── Call Gemini API ────────────────────────────────────────────────
+    console.log(`[/api/analyze] Analyzing image | type=${mimeType} | size=${(approximateBytes / 1024).toFixed(1)}KB`);
     const analysis = await analyzeMedicineImage(base64Data, mimeType);
-    console.log(`[/api/analyze] Success | medicine=${analysis.englishName} | status=${analysis.expiryStatus}`);
+    console.log(`[/api/analyze] Success | Medicine: ${analysis.englishName} | Status: ${analysis.expiryStatus}`);
 
     return res.status(200).json({ success: true, data: analysis });
 
   } catch (err) {
-    if (err.message?.includes('API_KEY') || err.message?.includes('API key')) {
-      return res.status(401).json({
-        success: false,
-        error: 'Invalid or missing Gemini API key. Check your .env file.',
-      });
+    console.error('[/api/analyze Error]', err);
+
+    let status = 500;
+    let errorMessage = err.message || 'Failed to analyze medicine image. Please try again.';
+
+    if (err.message?.includes('GEMINI_API_KEY') || err.message?.includes('API_KEY')) {
+      status = 401;
+      errorMessage = 'Gemini API Key is missing or invalid. Please configure GEMINI_API_KEY in server environment.';
+    } else if (err.message?.includes('quota') || err.status === 429) {
+      status = 429;
+      errorMessage = 'AI service quota limit reached. Please try again in a few moments.';
     }
-    if (err.message?.includes('quota') || err.status === 429) {
-      return res.status(429).json({
-        success: false,
-        error: 'Gemini API quota exceeded. Please try again later.',
-      });
-    }
-    next(err);
+
+    return res.status(status).json({
+      success: false,
+      error: errorMessage,
+    });
   }
 });
 

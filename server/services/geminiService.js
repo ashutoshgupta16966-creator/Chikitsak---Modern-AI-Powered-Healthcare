@@ -22,16 +22,17 @@ Your task is to analyze an image of a medicine strip, medicine box, or lab repor
 
 STRICT RULES:
 1. You MUST respond with ONLY valid JSON — no markdown, no explanation, no extra text.
-2. If the image is NOT a medicine or medical document, set all fields to appropriate error values.
+2. If the image is NOT a medicine or medical document, set englishName to "Unknown Item", hindiName to "अज्ञात वस्तु", and set appropriate error/notice details.
 3. Calculate daysLeft from today's date (${TODAY}) to the expiryDate.
 4. Set expiryStatus based on daysLeft:
    - "RED"    → daysLeft <= 7 OR already expired (daysLeft < 0)
    - "YELLOW" → daysLeft >= 8 AND daysLeft <= 15
    - "GREEN"  → daysLeft > 15
-5. hindiName and bimari/solution MUST be in simple, everyday Hindi (Devanagari script).
-6. solution must include: dosage, timing (morning/afternoon/night), and any special instructions in simple language.
-7. If the image shows a lab report, set hindiName to the report type (e.g., "खून की जाँच"), bimari to what the report tests, and solution to how to interpret or follow up.
-8. For expired medicines (daysLeft < 0), set daysLeft to a negative number.
+5. hindiName, bimari, solution, and warnings MUST be in simple, everyday Hindi (Devanagari script).
+6. bimariEn, solutionEn, and warningsEn MUST be in clear, simple English.
+7. solution must include: dosage, timing (morning/afternoon/night), and any special instructions.
+8. warnings / warningsEn should be 2 to 4 concise safety caution alerts (e.g. ["शराब से बचें", "खाना खाने के बाद लें"], ["Avoid alcohol", "Take after meals"]).
+9. For expired medicines (daysLeft < 0), set daysLeft to a negative number.
 
 REQUIRED JSON SCHEMA (return EXACTLY this structure, no extra fields):
 {
@@ -41,7 +42,11 @@ REQUIRED JSON SCHEMA (return EXACTLY this structure, no extra fields):
   "daysLeft": number (negative if expired, 9999 if no date found),
   "expiryStatus": "RED" | "YELLOW" | "GREEN",
   "bimari": "string — illness/condition it treats, in simple Hindi",
-  "solution": "string — dosage and usage instructions in simple Hindi"
+  "bimariEn": "string — illness/condition in simple English",
+  "solution": "string — dosage and usage instructions in simple Hindi",
+  "solutionEn": "string — dosage and usage instructions in simple English",
+  "warnings": ["array of short Hindi safety cautions"],
+  "warningsEn": ["array of short English safety cautions"]
 }
 `.trim();
 
@@ -87,6 +92,20 @@ export async function analyzeMedicineImage(base64Image, mimeType) {
     if (!(field in parsed)) {
       throw new Error(`Missing required field in Gemini response: ${field}`);
     }
+  }
+
+  // Ensure default arrays if missing
+  if (!Array.isArray(parsed.warnings)) {
+    parsed.warnings = ["डॉक्टर की सलाह अनुसार लें", "बच्चो की पहुँच से दूर रखें"];
+  }
+  if (!Array.isArray(parsed.warningsEn)) {
+    parsed.warningsEn = ["Take as advised by doctor", "Keep out of reach of children"];
+  }
+  if (!parsed.bimariEn) {
+    parsed.bimariEn = parsed.bimari;
+  }
+  if (!parsed.solutionEn) {
+    parsed.solutionEn = parsed.solution;
   }
 
   // Coerce types for safety

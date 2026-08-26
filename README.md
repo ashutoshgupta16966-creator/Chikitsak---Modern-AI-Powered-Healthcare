@@ -1,39 +1,43 @@
-# 💊 चिकित्सक — Chikitsak
+# 💊 चिकित्सक — Chikitsak (AI Medical Scanner)
 
-> **AI-powered Medicine & Lab Report Scanner for India**  
-> Scan any medicine strip or lab report → Get instant Hindi/English analysis, expiry status, and dosage guidance.
+> **High-Impact AI-Powered Medicine & Lab Report Scanner for India**  
+> Scan medicine strips, boxes, or doctor reports → Instant bilingual analysis (Hindi & English), Web Speech audio read-aloud, smart safety cautions, color-coded expiry badges, scan history dashboard, and 1-click WhatsApp sharing.
 
 ---
 
-## 📱 App Preview
+## 🌟 Key Features
 
-Single-screen mobile layout with 3 cards:
+1. **Modern Glassmorphism Medical Dashboard**:
+   - Translucent glass panels with emerald/teal gradients, glowing active badges, ambient background lighting.
+   - Fits on a single 100vh viewport without page scrolling.
+   - **Recent Scans Dashboard**: Stores up to 20 past medicine scans in `localStorage` with status badges, search preview, and 1-click reload.
 
-| Card | Height | Purpose |
-|------|--------|---------|
-| **Scanner** | 30% | Upload / capture image → live preview |
-| **Identity** | 30% | Name (EN + HI) + dynamic expiry badge (🔴🟡🟢) |
-| **Solution** | 40% | Illness info + dosage instructions in Hindi |
+2. **Dual Upload Selection Modal (Camera vs Gallery)**:
+   - Eliminates direct camera launch issues on desktop/iOS.
+   - **Option 1**: Camera capture (`capture="environment"` for mobile rear lens).
+   - **Option 2**: Gallery / File system upload (`accept="image/*"`).
+
+3. **Multi-Language Voice Output (Web Speech API)**:
+   - Integrated `window.speechSynthesis` audio playback.
+   - **हिंदी (Hindi) & English** language toggle for elderly or illiterate users.
+   - Live soundwave audio equalizer animation when speaking.
+
+4. **Smart Caution Alerts & Color-Coded Expiry Badges**:
+   - **🔴 RED**: Expired or ≤ 7 days left (*"Turant Badlein / Danger"*).
+   - **🟡 YELLOW**: 8 to 15 days left (*"Dhyan Dein / Use Soon"*).
+   - **🟢 GREEN**: > 15 days left (*"Safe to Use / सुरक्षित"*).
+   - High-contrast visual caution alert pills (*"Avoid alcohol"*, *"Take after food"*, *"Do not drive"*).
+
+5. **1-Click WhatsApp Sharing**:
+   - One tap formats medicine details, usage instructions, expiry status, and safety cautions into a clean WhatsApp text ready to send to doctors or family.
 
 ---
 
 ## 🚀 Quick Start
 
-### 1. Clone & Install
+### 1. Configure Environment
 
-```bash
-git clone <repo-url>
-cd chikitsak
-npm install
-```
-
-### 2. Configure Environment
-
-```bash
-cp .env.example .env
-```
-
-Open `.env` and set your Gemini API key:
+Create `.env` in the root folder:
 
 ```env
 GEMINI_API_KEY=your_gemini_api_key_here
@@ -41,26 +45,24 @@ PORT=3001
 NODE_ENV=development
 ```
 
-> **Get your API key**: [Google AI Studio](https://aistudio.google.com/app/apikey)  
-> The free tier of **Gemini 1.5 Flash** is sufficient for development.
+> Get your free API key at [Google AI Studio](https://aistudio.google.com/app/apikey).
 
-### 3. Run in Development
+### 2. Run in Development Mode
 
 ```bash
 npm run dev
 ```
 
-This runs both the Vite dev server (port `5173`) and the Express server (port `3001`) concurrently.  
-Open **http://localhost:5173** in your browser (or on mobile, use your machine's IP).
+Runs Vite dev server (`http://localhost:5173`) and Express backend (`http://localhost:3001`) concurrently.
 
-### 4. Build for Production
+### 3. Production Build & Server
 
 ```bash
 npm run build
-NODE_ENV=production npm start
+npm start
 ```
 
-The Express server will serve the built React app from `dist/`.
+Express serves the production bundle from `dist/` on port `3001`.
 
 ---
 
@@ -68,95 +70,32 @@ The Express server will serve the built React app from `dist/`.
 
 ```
 chikitsak/
-├── public/
-│   └── favicon.svg
 ├── server/
-│   ├── index.js                  # Express entry point
+│   ├── index.js                  # Express server (CORS, body parser, static serve)
 │   ├── routes/
-│   │   └── analyze.js            # POST /api/analyze
+│   │   └── analyze.js            # POST /api/analyze endpoint
 │   └── services/
-│       └── geminiService.js      # Gemini Vision API client
+│       └── geminiService.js      # Gemini 1.5 Flash Vision prompt & JSON parser
 ├── src/
 │   ├── api/
-│   │   └── client.js             # Frontend fetch wrapper
+│   │   └── client.js             # API client fetch wrapper with 30s timeout
 │   ├── components/
-│   │   ├── AppHeader.jsx         # Top nav bar
-│   │   ├── ScannerCard.jsx       # TOP CARD — image upload
-│   │   ├── IdentityCard.jsx      # MIDDLE CARD — name + expiry
-│   │   ├── SolutionCard.jsx      # BOTTOM CARD — bimari + solution
-│   │   └── ErrorBanner.jsx       # Error notification strip
-│   ├── App.jsx                   # Root state & layout
-│   ├── index.css                 # Global styles + Tailwind
-│   └── main.jsx                  # React entry point
-├── index.html
-├── vite.config.js
-├── tailwind.config.js
-├── postcss.config.js
+│   │   ├── AppHeader.jsx         # Glassmorphism header & history toggle
+│   │   ├── ScannerCard.jsx       # TOP CARD — dual camera/gallery selection modal
+│   │   ├── IdentityCard.jsx      # MIDDLE CARD — bilingual names & expiry badge
+│   │   ├── SolutionCard.jsx      # BOTTOM CARD — voice output, dosage & caution cards
+│   │   ├── ScanHistoryDashboard.jsx # Recent medicine scan history (localStorage)
+│   │   └── ErrorBanner.jsx       # Glassmorphism error alert
+│   ├── App.jsx                   # Main state machine & WhatsApp share logic
+│   ├── index.css                 # Glassmorphism utilities & soundwave keyframes
+│   └── main.jsx                  # React 18 entry point
+├── tailwind.config.js            # Devanagari font & color palette
+├── vite.config.js                # Vite build & API proxy setup
 └── package.json
 ```
 
 ---
 
-## 🔌 API Reference
+## ⚠️ Medical Disclaimer
 
-### `POST /api/analyze`
-
-**Request Body:**
-```json
-{
-  "image": "data:image/jpeg;base64,/9j/4AAQ..."
-}
-```
-
-**Success Response `200`:**
-```json
-{
-  "success": true,
-  "data": {
-    "englishName": "Paracetamol 500mg",
-    "hindiName": "पेरासिटामॉल",
-    "expiryDate": "2025-12-31",
-    "daysLeft": 127,
-    "expiryStatus": "GREEN",
-    "bimari": "बुखार, सिरदर्द, और हल्के दर्द में राहत",
-    "solution": "1 गोली सुबह, दोपहर और शाम को खाने के बाद लें। पानी के साथ निगलें। 24 घंटे में 3 से ज़्यादा गोली न लें।"
-  }
-}
-```
-
-**Expiry Status Logic:**
-| `expiryStatus` | Condition | Badge |
-|---|---|---|
-| `RED` | `daysLeft <= 7` OR expired | 🔴 तुरंत बदलें |
-| `YELLOW` | `8 <= daysLeft <= 15` | 🟡 ध्यान दें |
-| `GREEN` | `daysLeft > 15` | 🟢 सुरक्षित |
-
----
-
-## ⚙️ Environment Variables
-
-| Variable | Required | Default | Description |
-|---|---|---|---|
-| `GEMINI_API_KEY` | ✅ Yes | — | Google Gemini API key |
-| `PORT` | No | `3001` | Express server port |
-| `NODE_ENV` | No | `development` | App environment |
-| `VITE_API_URL` | No | `""` (same origin) | Override API base URL |
-
----
-
-## 🛠 Tech Stack
-
-| Layer | Technology |
-|---|---|
-| Frontend | React 18 + Vite 5 |
-| Styling | Tailwind CSS 3 |
-| Backend | Node.js + Express 4 |
-| AI Vision | Google Gemini 1.5 Flash |
-| Fonts | Inter + Noto Sans Devanagari |
-
----
-
-## ⚠️ Disclaimer
-
-This app provides AI-generated information for **educational purposes only**.  
-Always consult a qualified doctor (डॉक्टर) before taking or discontinuing any medicine.
+*Chikitsak is an AI-powered assistant designed for educational and informational purposes. Always consult a certified healthcare professional or doctor before starting or stopping any medication.*

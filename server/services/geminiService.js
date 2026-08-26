@@ -1,19 +1,19 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenAI } from '@google/genai';
 
 // ── Singleton Gemini client ────────────────────────────────────────────────
 let _client = null;
-function getClient() {
+function getAIClient() {
   if (!_client) {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      throw new Error('GEMINI_API_KEY is not set in environment variables');
+      throw new Error('GEMINI_API_KEY is missing in environment variables');
     }
-    _client = new GoogleGenerativeAI(apiKey);
+    _client = new GoogleGenAI({ apiKey });
   }
   return _client;
 }
 
-// ── System prompt ──────────────────────────────────────────────────────────
+// ── System Prompt ──────────────────────────────────────────────────────────
 const TODAY = new Date().toISOString().split('T')[0];
 
 const SYSTEM_PROMPT = `
@@ -22,7 +22,7 @@ Your task is to analyze an image of a medicine strip, medicine box, or lab repor
 
 STRICT RULES:
 1. You MUST respond with ONLY valid JSON — no markdown, no explanation, no extra text.
-2. If the image is NOT a medicine or medical document, set englishName to "Unknown Item", hindiName to "अज्ञात वस्तु", and set appropriate error/notice details.
+2. If the image is NOT a medicine or medical document, set englishName to "Unknown Item", hindiName to "अज्ञात वस्तु", and set appropriate details.
 3. Calculate daysLeft from today's date (${TODAY}) to the expiryDate.
 4. Set expiryStatus based on daysLeft:
    - "RED"    → daysLeft <= 7 OR already expired (daysLeft < 0)
@@ -50,31 +50,70 @@ REQUIRED JSON SCHEMA (return EXACTLY this structure, no extra fields):
 }
 `.trim();
 
-// ── Main analysis function ──────────────────────────────────────────────────
 /**
- * Analyzes a medicine image using Gemini Vision and returns structured data.
- * @param {string} base64Image  - Pure base64 string (no data URI prefix)
- * @param {string} mimeType     - MIME type e.g. 'image/jpeg'
- * @returns {Promise<Object>}   - Parsed JSON result
+ * Analyzes a medicine image using Google GenAI SDK (v2.x).
+ * Features automatic fallback model retry logic for high availability.
+ * @param {string} base64Image - Pure base64 string
+ * @param {string} mimeType    - MIME type (e.g. 'image/jpeg')
+ * @returns {Promise<Object>}  - Parsed medicine JSON analysis
  */
 export async function analyzeMedicineImage(base64Image, mimeType) {
-  const client = getClient();
-  const model  = client.getGenerativeModel({ model: 'gemini-1.5-flash' });
+  const ai = getAIClient();
 
-  const result = await model.generateContent([
+  const primaryModel  = process.env.GEMINI_MODEL || 'gemini-3.6-flash';
+  const fallbackModel = 'gemini-2.5-flash';
+
+  const contents = [
     SYSTEM_PROMPT,
     {
       inlineData: {
-        data:     base64Image,
+        data: base64Image,
         mimeType: mimeType || 'image/jpeg',
       },
     },
-  ]);
+  ];
 
-  const responseText = result.response.text().trim();
+  let rawText = null;
 
-  // Strip markdown code fences if Gemini wraps in ```json ... ```
-  const jsonText = responseText
+  // ── Primary Model Attempt ────────────────────────────────────────────────
+  try {
+    console.log(`[GeminiService] Requesting primary model: ${primaryModel}`);
+    const response = await ai.models.generateContent({
+      model: primaryModel,
+      contents,
+    });
+    rawText = typeof response.text === 'function' ? response.text() : response.text;
+  } catch (primaryErr) {
+    const pMsg = primaryErr?.message || String(primaryErr);
+    console.warn(`[GeminiService] Primary model (${primaryModel}) failed: ${pMsg}`);
+
+    // If primary model failed and isn't already the fallback, try fallback model
+    if (primaryModel !== fallbackModel) {
+      console.log(`[GeminiService] Retrying with fallback model: ${fallbackModel}`);
+      try {
+        const fallbackResponse = await ai.models.generateContent({
+          model: fallbackModel,
+          contents,
+        });
+        rawText = typeof fallbackResponse.text === 'function'
+          ? fallbackResponse.text()
+          : fallbackResponse.text;
+      } catch (fallbackErr) {
+        const fMsg = fallbackErr?.message || String(fallbackErr);
+        throw new Error(`AI Analysis failed: ${fMsg || pMsg}`);
+      }
+    } else {
+      throw new Error(`AI Analysis failed: ${pMsg}`);
+    }
+  }
+
+  if (!rawText || typeof rawText !== 'string') {
+    throw new Error('Gemini API returned an empty or invalid text response.');
+  }
+
+  // Strip markdown code fences if Gemini wraps output in ```json ... ```
+  const jsonText = rawText
+    .trim()
     .replace(/^```(?:json)?\s*/i, '')
     .replace(/\s*```$/i, '')
     .trim();
@@ -83,20 +122,20 @@ export async function analyzeMedicineImage(base64Image, mimeType) {
   try {
     parsed = JSON.parse(jsonText);
   } catch {
-    throw new Error(`Gemini returned invalid JSON: ${responseText.slice(0, 300)}`);
+    throw new Error(`Failed to parse AI response as JSON: ${rawText.slice(0, 200)}`);
   }
 
   // Validate required fields
   const required = ['englishName', 'hindiName', 'expiryDate', 'daysLeft', 'expiryStatus', 'bimari', 'solution'];
   for (const field of required) {
     if (!(field in parsed)) {
-      throw new Error(`Missing required field in Gemini response: ${field}`);
+      throw new Error(`Missing required field (${field}) in AI response.`);
     }
   }
 
-  // Ensure default arrays if missing
+  // Ensure default fallback values for optional arrays/fields
   if (!Array.isArray(parsed.warnings)) {
-    parsed.warnings = ["डॉक्टर की सलाह अनुसार लें", "बच्चो की पहुँच से दूर रखें"];
+    parsed.warnings = ["डॉक्टर की सलाह अनुसार लें", "बच्चों की पहुँच से दूर रखें"];
   }
   if (!Array.isArray(parsed.warningsEn)) {
     parsed.warningsEn = ["Take as advised by doctor", "Keep out of reach of children"];
@@ -108,7 +147,7 @@ export async function analyzeMedicineImage(base64Image, mimeType) {
     parsed.solutionEn = parsed.solution;
   }
 
-  // Coerce types for safety
+  // Coerce & sanitize types
   parsed.daysLeft     = Number(parsed.daysLeft);
   parsed.expiryStatus = String(parsed.expiryStatus).toUpperCase();
   if (!['RED', 'YELLOW', 'GREEN'].includes(parsed.expiryStatus)) {

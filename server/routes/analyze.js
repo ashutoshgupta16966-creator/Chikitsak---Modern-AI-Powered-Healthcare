@@ -61,19 +61,21 @@ router.post('/analyze', async (req, res) => {
     console.error('[/api/analyze Error]', err);
 
     let status = 500;
-    let errorMessage = err.message || 'Failed to analyze medicine image. Please try again.';
+    let errorMessage = typeof err === 'string'
+      ? err
+      : (err?.message && typeof err.message === 'string' ? err.message : 'Failed to analyze medicine image. Please try again.');
 
-    if (err.message?.includes('GEMINI_API_KEY') || err.message?.includes('API_KEY')) {
+    if (errorMessage.includes('GEMINI_API_KEY') || errorMessage.includes('API_KEY')) {
       status = 401;
       errorMessage = 'Gemini API Key is missing or invalid. Please configure GEMINI_API_KEY in server environment.';
-    } else if (err.message?.includes('quota') || err.status === 429) {
+    } else if (errorMessage.includes('quota') || err.status === 429) {
       status = 429;
       errorMessage = 'AI service quota limit reached. Please try again in a few moments.';
     }
 
     return res.status(status).json({
       success: false,
-      error: errorMessage,
+      error: String(errorMessage),
     });
   }
 });

@@ -2,6 +2,7 @@ import 'dotenv/config';
 import express    from 'express';
 import cors       from 'cors';
 import path       from 'path';
+import fs         from 'fs';
 import { fileURLToPath } from 'url';
 import analyzeRouter from './routes/analyze.js';
 
@@ -32,13 +33,14 @@ app.get('/api/health', (_req, res) => {
 app.all('/api/*', (_req, res) => {
   res.status(404).json({
     success: false,
-    error: 'API endpoint not found. Please verify the backend URL.',
+    error: 'API endpoint not found. Please verify the request URL.',
   });
 });
 
-// ── Serve React build in production ────────────────────────────────────────
-if (process.env.NODE_ENV === 'production') {
-  const distPath = path.join(__dirname, '..', 'dist');
+// ── Serve React build (Single Server for both Frontend + Backend) ─────────
+const distPath = path.join(__dirname, '..', 'dist');
+if (fs.existsSync(distPath)) {
+  console.log(`[Server] Serving production bundle from: ${distPath}`);
   app.use(express.static(distPath));
   app.get('*', (_req, res) => {
     res.sendFile(path.join(distPath, 'index.html'));
@@ -49,16 +51,17 @@ if (process.env.NODE_ENV === 'production') {
 app.use((err, _req, res, _next) => {
   console.error('[Global Server Error]', err);
   const status = err.status || err.statusCode || 500;
+  const message = typeof err === 'string' ? err : (err?.message || 'Internal server error occurred.');
   res.status(status).json({
     success: false,
-    error: err.message || 'Internal server error occurred.',
+    error: String(message),
   });
 });
 
-// Only listen if executed directly (supports serverless imports if needed)
+// Start Express server
 if (process.env.NODE_ENV !== 'test') {
   app.listen(PORT, () => {
-    console.log(`\n🏥  Chikitsak server active at http://localhost:${PORT}`);
+    console.log(`\n🏥  Chikitsak server running on http://localhost:${PORT}`);
     console.log(`   Mode : ${process.env.NODE_ENV || 'development'}`);
     console.log(`   API  : http://localhost:${PORT}/api/analyze\n`);
   });

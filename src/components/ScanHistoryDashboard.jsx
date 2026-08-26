@@ -1,21 +1,25 @@
-import { History, Trash2, ChevronRight, Calendar, AlertCircle, ShieldCheck, Clock } from 'lucide-react'
+import { History, Trash2, ChevronRight, Calendar, AlertCircle, ShieldCheck, Clock, Pill, Sparkles } from 'lucide-react'
 
 /**
- * ScanHistoryDashboard – Recent Scans History list with high-contrast card styling.
+ * ScanHistoryDashboard – Recent Scans History list with engaging empty state & high-contrast card styling.
  */
 export default function ScanHistoryDashboard({ history, onSelectHistoryItem, onClearHistory }) {
   if (!history || history.length === 0) {
     return (
       <div className="rounded-2xl bg-white border border-slate-200 p-6 flex flex-col items-center justify-center text-center gap-3 shadow-md">
-        <div className="w-14 h-14 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-700 shadow-inner">
-          <History size={28} />
+        <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-emerald-100 to-teal-100 border border-emerald-200 flex items-center justify-center text-emerald-700 shadow-inner">
+          <Pill size={32} className="transform -rotate-45" />
         </div>
         <div>
-          <h3 className="text-slate-900 font-extrabold text-base tracking-tight">
-            No Recent Scans Yet
+          <h3 className="text-slate-900 font-extrabold text-base tracking-tight flex items-center justify-center gap-1.5">
+            <span>No Recent Scans Yet</span>
+            <Sparkles size={16} className="text-emerald-600" />
           </h3>
           <p className="font-devanagari text-slate-700 font-bold text-xs mt-1">
-            आपकी पुरानी दवाइयों का इतिहास यहाँ सुरक्षित रहेगा।
+            आपकी स्कैन की गई दवाइयों का इतिहास यहाँ सुरक्षित रहेगा।
+          </p>
+          <p className="text-slate-500 font-medium text-[11px] mt-1">
+            Scan any medicine strip, box or report above to see history here!
           </p>
         </div>
       </div>

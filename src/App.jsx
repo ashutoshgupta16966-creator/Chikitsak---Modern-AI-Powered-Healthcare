@@ -142,11 +142,7 @@ ${warningsFormatted || '• Use as advised by doctor'}
   }, [analysis])
 
   return (
-    <div className="flex flex-col h-screen w-full max-w-md mx-auto bg-gradient-to-b from-slate-950 via-emerald-950 to-slate-950 overflow-hidden select-none relative font-sans text-gray-100">
-
-      {/* Ambient background glows */}
-      <div className="absolute top-12 left-8 w-44 h-44 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-12 right-8 w-44 h-44 bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
+    <div className="flex flex-col h-screen w-full max-w-md mx-auto bg-slate-100 overflow-hidden select-none relative font-sans text-slate-900 shadow-2xl border-x border-slate-300">
 
       {/* ── App Header ────────────────────────────────────────────── */}
       <AppHeader
@@ -163,7 +159,7 @@ ${warningsFormatted || '• Use as advised by doctor'}
       )}
 
       {/* ── Main Viewport Area ────────────────────────────────────── */}
-      <main className="flex-1 min-h-0 overflow-hidden relative z-10 flex flex-col">
+      <main className="flex-1 min-h-0 overflow-hidden relative z-10 flex flex-col bg-slate-100">
 
         {appState === 'result' && analysis ? (
           /* ── DEDICATED FULL RESULT VIEW ─────────────────────────── */
@@ -176,22 +172,21 @@ ${warningsFormatted || '• Use as advised by doctor'}
           />
         ) : (
           /* ── CLEAN HOMEPAGE VIEW ───────────────────────────────── */
-          <div className="card-scroll flex-1 p-3 space-y-3">
+          <div className="card-scroll flex-1 p-3.5 space-y-3.5">
             {showHistory ? (
               /* History Dashboard View */
               <ScanHistoryDashboard
                 history={history}
                 onSelectHistoryItem={handleSelectHistoryItem}
                 onClearHistory={handleClearHistory}
-                onNewScan={() => setShowHistory(false)}
               />
             ) : (
               /* Clean Home View */
               <>
-                {/* 1. Hero Intro Card */}
-                <HeroIntroCard onScanClick={() => {}} />
+                {/* 1. Revamped Hero Intro Card */}
+                <HeroIntroCard />
 
-                {/* 2. Main Scan Trigger Card (Dual Camera/Gallery Modal) */}
+                {/* 2. Main Scan Trigger Card (CTA Box + Dual Modal) */}
                 <ScannerCard
                   imageUrl={imageUrl}
                   isLoading={appState === 'loading'}
@@ -203,7 +198,6 @@ ${warningsFormatted || '• Use as advised by doctor'}
                   history={history}
                   onSelectHistoryItem={handleSelectHistoryItem}
                   onClearHistory={handleClearHistory}
-                  onNewScan={() => {}}
                 />
               </>
             )}

@@ -1,61 +1,63 @@
-import { Sparkles, ShieldCheck, Volume2, Share2, Zap, Pill } from 'lucide-react'
+import { Sparkles, ShieldCheck, Volume2, Share2, Zap } from 'lucide-react'
 
 /**
- * HeroIntroCard – Modern glassmorphism hero header box for the home screen.
- * Displays Chikitsak AI branding, mission tagline, and quick feature badges.
+ * HeroIntroCard – Revamped high-impact AI medical intro widget.
+ * Features rich gradient background, crisp white typography, and solid feature pill badges.
  */
-export default function HeroIntroCard({ onScanClick }) {
+export default function HeroIntroCard() {
   return (
-    <div className="rounded-2xl glass-panel p-4 border border-emerald-300/40 shadow-xl relative overflow-hidden bg-gradient-to-br from-emerald-900/90 via-teal-900/80 to-slate-900/95 text-white">
-      {/* Background ambient lighting */}
-      <div className="absolute -top-10 -right-10 w-32 h-32 bg-emerald-500/20 rounded-full blur-2xl pointer-events-none" />
-      <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-teal-500/20 rounded-full blur-2xl pointer-events-none" />
+    <div className="rounded-2xl bg-gradient-to-br from-emerald-600 via-teal-700 to-emerald-900 text-white p-4 shadow-xl border border-emerald-400/30 relative overflow-hidden">
+      {/* Subtle ambient lighting */}
+      <div className="absolute -top-12 -right-12 w-36 h-36 bg-white/10 rounded-full blur-2xl pointer-events-none" />
+      <div className="absolute -bottom-12 -left-12 w-36 h-36 bg-teal-400/20 rounded-full blur-2xl pointer-events-none" />
 
-      {/* Header Badge */}
-      <div className="flex items-center justify-between mb-2">
-        <span className="inline-flex items-center gap-1.5 bg-emerald-500/20 border border-emerald-400/30 text-emerald-300 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">
-          <Sparkles size={11} className="text-emerald-400 animate-pulse" />
+      {/* Header Tag */}
+      <div className="flex items-center justify-between mb-2.5 relative z-10">
+        <span className="inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-md border border-white/30 text-white text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">
+          <Sparkles size={12} className="text-yellow-300 animate-pulse" />
           <span>AI-Powered Medical Assistant</span>
         </span>
-        <span className="text-[10px] text-emerald-300/70 font-mono font-medium">
-          24/7 Smart Scan
+        <span className="text-[10px] text-emerald-100 font-mono font-bold tracking-wide">
+          24/7 Smart Scanner
         </span>
       </div>
 
-      {/* Main Title & Bilingual Subtitle */}
-      <h2 className="text-xl font-extrabold tracking-tight text-white flex items-center gap-2">
-        <span>Chikitsak</span>
-        <span className="text-emerald-400 font-devanagari text-lg font-bold">चिकित्सक</span>
-      </h2>
+      {/* Main Title & Subtitle */}
+      <div className="relative z-10">
+        <h2 className="text-2xl font-extrabold tracking-tight text-white flex items-center gap-2">
+          <span>Chikitsak</span>
+          <span className="text-emerald-200 font-devanagari text-xl font-bold">चिकित्सक</span>
+        </h2>
 
-      <p className="text-gray-200 text-xs font-semibold leading-relaxed mt-1">
-        Your 24/7 Smart AI Medical Assistant for instant medicine &amp; lab report analysis.
-      </p>
+        <p className="text-white text-xs font-semibold leading-relaxed mt-1">
+          Your 24/7 Smart AI Medical Assistant for instantly analyzing medicine packages &amp; lab reports.
+        </p>
 
-      <p className="font-devanagari text-emerald-200/90 text-xs leading-relaxed mt-0.5 font-medium">
-        दवाई के पत्ते, डिब्बे या रिपोर्ट की फोटो लें — पाएं तुरंत सही जानकारी व सावधानियां।
-      </p>
+        <p className="font-devanagari text-emerald-100 text-xs leading-relaxed mt-1 font-medium">
+          दवाई के पत्ते, डिब्बे या रिपोर्ट की फोटो लें — पाएं तुरंत सही जानकारी व सावधानियां।
+        </p>
+      </div>
 
-      {/* Feature Badges Grid */}
-      <div className="grid grid-cols-2 gap-1.5 mt-3 pt-2.5 border-t border-emerald-700/40">
-        <div className="flex items-center gap-1.5 bg-emerald-950/40 border border-emerald-500/20 px-2 py-1.5 rounded-lg">
-          <Zap size={13} className="text-emerald-400 shrink-0" />
-          <span className="text-[11px] font-semibold text-gray-200">Instant Scan</span>
+      {/* Visual Feature Pill Badges */}
+      <div className="grid grid-cols-2 gap-2 mt-3.5 pt-3 border-t border-white/20 relative z-10">
+        <div className="flex items-center gap-2 bg-white/15 backdrop-blur-md border border-white/25 px-2.5 py-1.5 rounded-xl text-white shadow-sm">
+          <Zap size={14} className="text-yellow-300 shrink-0" />
+          <span className="text-xs font-bold tracking-wide">Instant Scan</span>
         </div>
 
-        <div className="flex items-center gap-1.5 bg-emerald-950/40 border border-emerald-500/20 px-2 py-1.5 rounded-lg">
-          <ShieldCheck size={13} className="text-emerald-400 shrink-0" />
-          <span className="text-[11px] font-semibold text-gray-200">Expiry Alert</span>
+        <div className="flex items-center gap-2 bg-white/15 backdrop-blur-md border border-white/25 px-2.5 py-1.5 rounded-xl text-white shadow-sm">
+          <ShieldCheck size={14} className="text-emerald-300 shrink-0" />
+          <span className="text-xs font-bold tracking-wide">Expiry Alert</span>
         </div>
 
-        <div className="flex items-center gap-1.5 bg-emerald-950/40 border border-emerald-500/20 px-2 py-1.5 rounded-lg">
-          <Volume2 size={13} className="text-emerald-400 shrink-0" />
-          <span className="text-[11px] font-semibold text-gray-200">Voice Read-Aloud</span>
+        <div className="flex items-center gap-2 bg-white/15 backdrop-blur-md border border-white/25 px-2.5 py-1.5 rounded-xl text-white shadow-sm">
+          <Volume2 size={14} className="text-teal-200 shrink-0" />
+          <span className="text-xs font-bold tracking-wide">Voice Read-Aloud</span>
         </div>
 
-        <div className="flex items-center gap-1.5 bg-emerald-950/40 border border-emerald-500/20 px-2 py-1.5 rounded-lg">
-          <Share2 size={13} className="text-emerald-400 shrink-0" />
-          <span className="text-[11px] font-semibold text-gray-200">WhatsApp Share</span>
+        <div className="flex items-center gap-2 bg-white/15 backdrop-blur-md border border-white/25 px-2.5 py-1.5 rounded-xl text-white shadow-sm">
+          <Share2 size={14} className="text-cyan-200 shrink-0" />
+          <span className="text-xs font-bold tracking-wide">WhatsApp Share</span>
         </div>
       </div>
     </div>

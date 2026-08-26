@@ -1,20 +1,20 @@
-import { History, Trash2, ChevronRight, Calendar, AlertCircle, ShieldCheck, Clock, Pill } from 'lucide-react'
+import { History, Trash2, ChevronRight, Calendar, AlertCircle, ShieldCheck, Clock } from 'lucide-react'
 
 /**
- * ScanHistoryDashboard – Recent Medicines Scan History list for the home screen.
+ * ScanHistoryDashboard – Recent Scans History list with high-contrast card styling.
  */
-export default function ScanHistoryDashboard({ history, onSelectHistoryItem, onClearHistory, onNewScan }) {
+export default function ScanHistoryDashboard({ history, onSelectHistoryItem, onClearHistory }) {
   if (!history || history.length === 0) {
     return (
-      <div className="rounded-2xl glass-panel p-5 flex flex-col items-center justify-center text-center gap-3 border border-emerald-200/60 shadow-xl bg-white/90">
-        <div className="w-14 h-14 rounded-2xl bg-emerald-100/80 flex items-center justify-center text-emerald-700 shadow-inner">
+      <div className="rounded-2xl bg-white border border-slate-200 p-6 flex flex-col items-center justify-center text-center gap-3 shadow-md">
+        <div className="w-14 h-14 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-700 shadow-inner">
           <History size={28} />
         </div>
         <div>
-          <h3 className="text-slate-900 font-extrabold text-sm tracking-tight">
+          <h3 className="text-slate-900 font-extrabold text-base tracking-tight">
             No Recent Scans Yet
           </h3>
-          <p className="font-devanagari text-gray-500 text-xs mt-0.5">
+          <p className="font-devanagari text-slate-700 font-bold text-xs mt-1">
             आपकी पुरानी दवाइयों का इतिहास यहाँ सुरक्षित रहेगा।
           </p>
         </div>
@@ -23,43 +23,43 @@ export default function ScanHistoryDashboard({ history, onSelectHistoryItem, onC
   }
 
   return (
-    <div className="rounded-2xl glass-panel p-3.5 flex flex-col gap-2.5 border border-emerald-200/60 shadow-xl bg-white/95 text-slate-900">
-      {/* Dashboard Title & Clear button */}
-      <div className="flex items-center justify-between px-1">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-emerald-600/10 text-emerald-700 flex items-center justify-center">
+    <div className="rounded-2xl bg-white border border-slate-200 p-4 flex flex-col gap-3 shadow-md text-slate-900">
+      {/* Dashboard Title & Clear Button */}
+      <div className="flex items-center justify-between px-0.5 border-b border-slate-100 pb-2.5">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0">
             <History size={18} />
           </div>
           <div>
-            <h3 className="text-slate-900 font-extrabold text-sm leading-tight tracking-tight">
+            <h3 className="text-slate-900 font-extrabold text-base leading-tight tracking-tight">
               Recent Scans History
             </h3>
-            <p className="font-devanagari text-emerald-800 text-[11px] font-semibold leading-tight">
+            <p className="font-devanagari text-emerald-800 font-bold text-xs leading-tight">
               हाल की दवाइयाँ ({history.length})
             </p>
           </div>
         </div>
         <button
           onClick={onClearHistory}
-          className="flex items-center gap-1 text-[11px] text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-2.5 py-1.5 rounded-lg transition-colors font-bold"
+          className="flex items-center gap-1 text-xs text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-xl border border-red-200 transition-colors font-extrabold"
           title="Clear scan history"
         >
-          <Trash2 size={12} />
+          <Trash2 size={13} />
           <span>Clear All</span>
         </button>
       </div>
 
       {/* Cards List */}
-      <div className="space-y-2 max-h-72 card-scroll pr-0.5">
+      <div className="space-y-2.5 max-h-72 card-scroll pr-0.5">
         {history.map((item) => {
           const isRed = item.expiryStatus === 'RED'
           const isYellow = item.expiryStatus === 'YELLOW'
 
           const badgeBg = isRed
-            ? 'bg-red-500 text-white badge-red'
+            ? 'bg-red-600 text-white font-extrabold badge-red'
             : isYellow
-            ? 'bg-amber-400 text-amber-950 badge-yellow'
-            : 'bg-emerald-600 text-white badge-green'
+            ? 'bg-amber-500 text-slate-950 font-extrabold badge-yellow'
+            : 'bg-emerald-600 text-white font-extrabold badge-green'
 
           const badgeIcon = isRed ? (
             <AlertCircle size={11} />
@@ -77,10 +77,10 @@ export default function ScanHistoryDashboard({ history, onSelectHistoryItem, onC
             <div
               key={item.id}
               onClick={() => onSelectHistoryItem(item)}
-              className="group p-3 rounded-xl bg-emerald-50/50 hover:bg-emerald-100/70 border border-emerald-200/80 hover:border-emerald-400 shadow-sm hover:shadow-md transition-all cursor-pointer flex items-center justify-between gap-3 active:scale-[0.99]"
+              className="group p-3 rounded-xl bg-slate-50 hover:bg-emerald-50/70 border border-slate-200 hover:border-emerald-400 shadow-sm hover:shadow-md transition-all cursor-pointer flex items-center justify-between gap-3 active:scale-[0.99]"
             >
               {/* Thumbnail */}
-              <div className="w-12 h-12 rounded-xl bg-white border border-emerald-200 overflow-hidden shrink-0 flex items-center justify-center relative shadow-sm">
+              <div className="w-12 h-12 rounded-xl bg-white border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center relative shadow-xs">
                 {item.previewUri ? (
                   <img src={item.previewUri} alt={item.englishName} className="w-full h-full object-cover" />
                 ) : (
@@ -91,24 +91,24 @@ export default function ScanHistoryDashboard({ history, onSelectHistoryItem, onC
               {/* Middle details */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  {/* LARGE ENGLISH NAME */}
+                  {/* BOLD DARK SLATE TITLE */}
                   <h4 className="text-slate-900 font-extrabold text-sm truncate leading-tight group-hover:text-emerald-800 transition-colors">
                     {item.englishName}
                   </h4>
-                  <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md flex items-center gap-0.5 ${badgeBg}`}>
+                  <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md flex items-center gap-1 ${badgeBg}`}>
                     {badgeIcon}
                     <span>{item.expiryStatus}</span>
                   </span>
                 </div>
 
-                {/* HINDI NAME */}
-                <p className="font-devanagari text-emerald-800 text-xs truncate leading-tight mt-0.5 font-bold">
+                {/* HINDI SUBTITLE – HIGH CONTRAST DARK */}
+                <p className="font-devanagari text-slate-700 font-bold text-xs truncate leading-tight mt-0.5">
                   {item.hindiName}
                 </p>
 
-                <div className="flex items-center gap-2 mt-1 text-[10px] text-gray-500 font-semibold">
+                <div className="flex items-center gap-2 mt-1 text-[11px] text-slate-600 font-semibold">
                   <span className="flex items-center gap-0.5">
-                    <Calendar size={10} />
+                    <Calendar size={11} />
                     {formattedTime}
                   </span>
                   <span>•</span>
@@ -119,8 +119,8 @@ export default function ScanHistoryDashboard({ history, onSelectHistoryItem, onC
               </div>
 
               {/* Arrow */}
-              <div className="text-gray-400 group-hover:text-emerald-700 transition-colors shrink-0">
-                <ChevronRight size={18} />
+              <div className="text-slate-400 group-hover:text-emerald-700 transition-colors shrink-0">
+                <ChevronRight size={20} />
               </div>
             </div>
           )

@@ -1,11 +1,11 @@
 import { Pill, Sparkles, Home, History } from 'lucide-react'
 
 /**
- * AppHeader – Glassmorphism header bar for Chikitsak AI Medical Scanner.
+ * AppHeader – High-contrast dark top navigation bar for Chikitsak.
  */
 export default function AppHeader({ onGoHome, isResultView, historyCount, showHistory, onToggleHistory }) {
   return (
-    <header className="sticky top-0 z-40 flex items-center justify-between px-3.5 py-2.5 bg-gradient-to-r from-emerald-950 via-teal-950 to-slate-950 backdrop-blur-xl border-b border-emerald-700/40 shadow-lg shrink-0">
+    <header className="sticky top-0 z-40 flex items-center justify-between px-3.5 py-2.5 bg-slate-950 text-white border-b border-slate-800 shadow-lg shrink-0">
 
       {/* Brand logo trigger */}
       <div
@@ -27,7 +27,7 @@ export default function AppHeader({ onGoHome, isResultView, historyCount, showHi
               <Sparkles size={8} /> AI
             </span>
           </div>
-          <p className="font-devanagari text-emerald-300/90 text-[11px] leading-none font-bold mt-0.5">
+          <p className="font-devanagari text-emerald-300 text-[11px] leading-none font-bold mt-0.5">
             चिकित्सक · Medical Assistant
           </p>
         </div>
@@ -39,9 +39,9 @@ export default function AppHeader({ onGoHome, isResultView, historyCount, showHi
         {isResultView && (
           <button
             onClick={onGoHome}
-            className="flex items-center gap-1.5 bg-emerald-900/80 hover:bg-emerald-800 text-emerald-200 border border-emerald-600/40 text-xs font-bold px-3 py-1.5 rounded-full transition-all shadow-sm"
+            className="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 text-xs font-extrabold px-3.5 py-1.5 rounded-full transition-all shadow-sm"
           >
-            <Home size={13} />
+            <Home size={14} />
             <span>Home</span>
           </button>
         )}
@@ -50,17 +50,17 @@ export default function AppHeader({ onGoHome, isResultView, historyCount, showHi
         {!isResultView && (
           <button
             onClick={onToggleHistory}
-            className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full border transition-all shadow-sm ${
+            className={`flex items-center gap-1.5 text-xs font-extrabold px-3 py-1.5 rounded-full border transition-all shadow-sm ${
               showHistory
-                ? 'bg-emerald-400 text-emerald-950 border-emerald-300'
-                : 'bg-emerald-950/80 text-emerald-200 border-emerald-700/60 hover:bg-emerald-900'
+                ? 'bg-emerald-500 text-slate-950 border-emerald-400'
+                : 'bg-slate-900 text-white border-slate-700 hover:bg-slate-800'
             }`}
             title="Scan History / इतिहास"
           >
-            <History size={13} />
+            <History size={14} />
             <span>History</span>
             {historyCount > 0 && (
-              <span className="w-4 h-4 rounded-full bg-emerald-500 text-white text-[10px] font-extrabold flex items-center justify-center ml-0.5">
+              <span className="w-4 h-4 rounded-full bg-emerald-500 text-slate-950 text-[10px] font-extrabold flex items-center justify-center ml-0.5">
                 {historyCount > 9 ? '9+' : historyCount}
               </span>
             )}

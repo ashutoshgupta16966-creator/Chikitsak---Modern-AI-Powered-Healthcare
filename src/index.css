@@ -19,11 +19,11 @@ body,
   padding: 0;
   overflow: hidden;
   font-family: 'Inter', 'Noto Sans Devanagari', system-ui, sans-serif;
-  background-color: #0d1e17; /* Deep emerald dark background theme support */
-  color: #1e293b;
+  background-color: #0f172a; /* Slate 900 desktop background */
+  color: #0f172a;
 }
 
-/* ── Scrollable inner panels (solution text, history list, etc.) ──────── */
+/* ── Scrollable inner panels ─────────────────────────────────────────── */
 .card-scroll {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
@@ -33,45 +33,16 @@ body,
   display: none;               /* Webkit */
 }
 
-/* ── Modern Glassmorphism Utilities ──────────────────────────────────── */
-.glass-panel {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  box-shadow: 0 8px 32px 0 rgba(16, 185, 129, 0.08);
+/* ── High Contrast Card Utilities ───────────────────────────────────── */
+.card-white {
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.06);
 }
 
-.glass-panel-dark {
-  background: rgba(15, 23, 42, 0.75);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.glass-card-hover {
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.glass-card-hover:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 24px -4px rgba(16, 185, 129, 0.15);
-}
-.glass-card-hover:active {
-  transform: scale(0.98);
-}
-
-/* ── Status badge glows ──────────────────────────────────────────────── */
-.badge-red    { box-shadow: 0 0 12px rgba(239, 68, 68, 0.35); }
-.badge-yellow { box-shadow: 0 0 12px rgba(234, 179, 8, 0.35); }
-.badge-green  { box-shadow: 0 0 12px rgba(34, 197, 94, 0.35); }
-
-.glow-emerald {
-  box-shadow: 0 0 20px -3px rgba(16, 185, 129, 0.3);
-}
-
-.glow-orange {
-  box-shadow: 0 0 20px -3px rgba(249, 115, 22, 0.3);
-}
+.badge-red    { box-shadow: 0 0 10px rgba(225, 29, 72, 0.4); }
+.badge-yellow { box-shadow: 0 0 10px rgba(234, 179, 8, 0.4); }
+.badge-green  { box-shadow: 0 0 10px rgba(16, 185, 129, 0.4); }
 
 /* ── Skeleton shimmer loading ────────────────────────────────────────── */
 @keyframes shimmer {
@@ -79,7 +50,7 @@ body,
   100% { background-position:  200% 0; }
 }
 .skeleton {
-  background: linear-gradient(90deg, #e2f5ea 25%, #c6ecd4 50%, #e2f5ea 75%);
+  background: linear-gradient(90deg, #e2e8f0 25%, #cbd5e1 50%, #e2e8f0 75%);
   background-size: 200% 100%;
   animation: shimmer 1.4s infinite;
   border-radius: 0.5rem;
@@ -89,12 +60,3 @@ body,
 .font-devanagari {
   font-family: 'Noto Sans Devanagari', 'Inter', sans-serif;
 }
-
-/* ── Audio Pulse Animation ───────────────────────────────────────────── */
-@keyframes soundwave {
-  0%, 100% { height: 4px; }
-  50% { height: 16px; }
-}
-.bar-1 { animation: soundwave 0.8s ease-in-out infinite; }
-.bar-2 { animation: soundwave 0.8s ease-in-out infinite 0.2s; }
-.bar-3 { animation: soundwave 0.8s ease-in-out infinite 0.4s; }

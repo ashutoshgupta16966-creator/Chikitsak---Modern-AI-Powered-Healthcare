@@ -1,0 +1,72 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Base resets for a true full-screen mobile shell ─────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;            /* No scrolling on the shell */
+  font-family: 'Inter', 'Noto Sans Devanagari', system-ui, sans-serif;
+  background-color: #f0fdf4;
+}
+
+/* ── Scrollable inner panels (solution text, etc.) ───────────────────── */
+.card-scroll {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;       /* Firefox */
+}
+.card-scroll::-webkit-scrollbar {
+  display: none;               /* Webkit */
+}
+
+/* ── Image upload button ripple effect ───────────────────────────────── */
+.upload-btn {
+  position: relative;
+  overflow: hidden;
+}
+.upload-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, rgba(255,255,255,0.35) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.upload-btn:active::after {
+  opacity: 1;
+}
+
+/* ── Status badge glow ───────────────────────────────────────────────── */
+.badge-red    { box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.25); }
+.badge-yellow { box-shadow: 0 0 0 3px rgba(234, 179,  8, 0.25); }
+.badge-green  { box-shadow: 0 0 0 3px rgba( 34, 197, 94, 0.25); }
+
+/* ── Skeleton shimmer loading ────────────────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, #e2f5ea 25%, #c6ecd4 50%, #e2f5ea 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 0.375rem;
+}
+
+/* ── Devanagari text helper ──────────────────────────────────────────── */
+.font-devanagari {
+  font-family: 'Noto Sans Devanagari', 'Inter', sans-serif;
+}

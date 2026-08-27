@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from 'react'
 import { analyzeImage, fileToBase64 } from './api/client'
+import { formatErrorMessage } from './utils/errorUtils'
 import AppHeader            from './components/AppHeader'
 import HeroIntroCard        from './components/HeroIntroCard'
 import ScannerCard          from './components/ScannerCard'
@@ -81,7 +82,7 @@ export default function App() {
       saveToHistory(result, preview)
     } catch (err) {
       console.error('[App] Image analysis error:', err)
-      setError(err.message || 'Failed to analyze medicine image. Please try again.')
+      setError(formatErrorMessage(err))
       setAppState('error')
     }
   }, [imageUrl, saveToHistory])
@@ -155,7 +156,11 @@ ${warningsFormatted || '• Use as advised by doctor'}
 
       {/* ── Error Notification Banner ─────────────────────────────── */}
       {error && (
-        <ErrorBanner message={error} onDismiss={() => setError(null)} />
+        <ErrorBanner
+          message={error}
+          onDismiss={() => { setError(null); setAppState('idle') }}
+          onRetry={() => { setError(null); setAppState('idle') }}
+        />
       )}
 
       {/* ── Main Viewport Area ────────────────────────────────────── */}

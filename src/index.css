@@ -19,30 +19,24 @@ body,
   padding: 0;
   overflow: hidden;
   font-family: 'Inter', 'Noto Sans Devanagari', system-ui, sans-serif;
-  background-color: #0f172a; /* Slate 900 desktop background */
-  color: #0f172a;
+  background-color: #0b0713;
+  color: #ffffff;
 }
 
 /* ── Scrollable inner panels ─────────────────────────────────────────── */
 .card-scroll {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;       /* Firefox */
+  scrollbar-width: none;
 }
 .card-scroll::-webkit-scrollbar {
-  display: none;               /* Webkit */
+  display: none;
 }
 
-/* ── High Contrast Card Utilities ───────────────────────────────────── */
-.card-white {
-  background-color: #ffffff;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.06);
-}
-
-.badge-red    { box-shadow: 0 0 10px rgba(225, 29, 72, 0.4); }
-.badge-yellow { box-shadow: 0 0 10px rgba(234, 179, 8, 0.4); }
-.badge-green  { box-shadow: 0 0 10px rgba(16, 185, 129, 0.4); }
+/* ── Expiry badge glow shadows ───────────────────────────────────────── */
+.badge-red    { box-shadow: 0 0 10px rgba(225, 29, 72, 0.5); }
+.badge-yellow { box-shadow: 0 0 10px rgba(234, 179, 8, 0.5); }
+.badge-green  { box-shadow: 0 0 10px rgba(16, 185, 129, 0.5); }
 
 /* ── Skeleton shimmer loading ────────────────────────────────────────── */
 @keyframes shimmer {
@@ -50,11 +44,25 @@ body,
   100% { background-position:  200% 0; }
 }
 .skeleton {
-  background: linear-gradient(90deg, #e2e8f0 25%, #cbd5e1 50%, #e2e8f0 75%);
+  background: linear-gradient(90deg, #1e1b4b 25%, #312e81 50%, #1e1b4b 75%);
   background-size: 200% 100%;
   animation: shimmer 1.4s infinite;
   border-radius: 0.5rem;
 }
+
+/* ── Scan line animation ─────────────────────────────────────────────── */
+@keyframes scanline {
+  0%   { top: 0%; }
+  50%  { top: 85%; }
+  100% { top: 0%; }
+}
+
+/* ── Gold glow pulse ─────────────────────────────────────────────────── */
+@keyframes goldpulse {
+  0%, 100% { box-shadow: 0 0 12px 2px rgba(245, 158, 11, 0.3); }
+  50%       { box-shadow: 0 0 24px 6px rgba(245, 158, 11, 0.55); }
+}
+.gold-glow { animation: goldpulse 2.8s ease-in-out infinite; }
 
 /* ── Devanagari text helper ──────────────────────────────────────────── */
 .font-devanagari {

@@ -2,11 +2,11 @@ import { useState, useCallback, useEffect } from 'react'
 import { analyzeImage, fileToBase64 } from './api/client'
 import { formatErrorMessage } from './utils/errorUtils'
 import AppHeader            from './components/AppHeader'
-import HeroIntroCard        from './components/HeroIntroCard'
 import ScannerCard          from './components/ScannerCard'
 import ScanHistoryDashboard from './components/ScanHistoryDashboard'
 import ResultView           from './components/ResultView'
 import ErrorBanner          from './components/ErrorBanner'
+import { Stethoscope, Sparkles } from 'lucide-react'
 
 const HISTORY_KEY = 'chikitsak_history'
 
@@ -22,9 +22,7 @@ export default function App() {
   useEffect(() => {
     try {
       const saved = localStorage.getItem(HISTORY_KEY)
-      if (saved) {
-        setHistory(JSON.parse(saved))
-      }
+      if (saved) setHistory(JSON.parse(saved))
     } catch (err) {
       console.warn('Failed to load history from localStorage:', err)
     }
@@ -38,7 +36,6 @@ export default function App() {
       previewUri: previewUri || null,
       ...scanData,
     }
-
     setHistory((prev) => {
       const filtered = prev.filter((item) => item.englishName !== scanData.englishName)
       const updated  = [newItem, ...filtered].slice(0, 25)
@@ -53,18 +50,13 @@ export default function App() {
 
   // ── Clear history ───────────────────────────────────────────────────────
   const handleClearHistory = useCallback(() => {
-    try {
-      localStorage.removeItem(HISTORY_KEY)
-    } catch (err) {
-      console.warn('Failed to clear localStorage:', err)
-    }
+    try { localStorage.removeItem(HISTORY_KEY) } catch {}
     setHistory([])
   }, [])
 
   // ── Image Selection Handler ─────────────────────────────────────────────
   const handleImageSelected = useCallback(async (file) => {
     if (imageUrl) URL.revokeObjectURL(imageUrl)
-
     const preview = URL.createObjectURL(file)
     setImageUrl(preview)
     setAnalysis(null)
@@ -77,8 +69,6 @@ export default function App() {
       const result    = await analyzeImage(base64Uri)
       setAnalysis(result)
       setAppState('result')
-
-      // Save to localStorage history
       saveToHistory(result, preview)
     } catch (err) {
       console.error('[App] Image analysis error:', err)
@@ -100,9 +90,7 @@ export default function App() {
   // ── Select item from history dashboard ─────────────────────────────────
   const handleSelectHistoryItem = useCallback((item) => {
     setAnalysis(item)
-    if (item.previewUri) {
-      setImageUrl(item.previewUri)
-    }
+    if (item.previewUri) setImageUrl(item.previewUri)
     setShowHistory(false)
     setAppState('result')
   }, [])
@@ -117,9 +105,7 @@ export default function App() {
       ? '🟡 EXPIRING SOON / ध्यान दें'
       : '🟢 SAFE TO USE / सुरक्षित'
 
-    const warningsFormatted = (analysis.warnings || [])
-      .map((w) => `• ${w}`)
-      .join('\n')
+    const warningsFormatted = (analysis.warnings || []).map((w) => `• ${w}`).join('\n')
 
     const message = `🏥 *Chikitsak (चिकित्सक) AI Medical Report*
 ----------------------------------------
@@ -143,7 +129,10 @@ ${warningsFormatted || '• Use as advised by doctor'}
   }, [analysis])
 
   return (
-    <div className="flex flex-col h-screen w-full max-w-md mx-auto bg-slate-100 overflow-hidden select-none relative font-sans text-slate-900 shadow-2xl border-x border-slate-300">
+    <div className="flex flex-col h-screen w-full max-w-md mx-auto bg-gradient-to-b from-[#0b0713] via-[#160d2b] to-[#0b0713] overflow-hidden select-none relative font-sans text-white shadow-2xl border-x border-purple-900/30">
+
+      {/* Ambient radial glow behind header */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-72 h-40 bg-purple-600/10 blur-3xl pointer-events-none z-0" />
 
       {/* ── App Header ────────────────────────────────────────────── */}
       <AppHeader
@@ -164,7 +153,7 @@ ${warningsFormatted || '• Use as advised by doctor'}
       )}
 
       {/* ── Main Viewport Area ────────────────────────────────────── */}
-      <main className="flex-1 min-h-0 overflow-hidden relative z-10 flex flex-col bg-slate-100">
+      <main className="flex-1 min-h-0 overflow-hidden relative z-10 flex flex-col">
 
         {appState === 'result' && analysis ? (
           /* ── DEDICATED FULL RESULT VIEW ─────────────────────────── */
@@ -176,7 +165,7 @@ ${warningsFormatted || '• Use as advised by doctor'}
             onNewScan={handleGoHome}
           />
         ) : (
-          /* ── CLEAN HOMEPAGE VIEW ───────────────────────────────── */
+          /* ── ROYAL HOMEPAGE VIEW ───────────────────────────────── */
           <div className="card-scroll flex-1 p-3.5 space-y-3.5">
             {showHistory ? (
               /* History Dashboard View */
@@ -186,14 +175,45 @@ ${warningsFormatted || '• Use as advised by doctor'}
                 onClearHistory={handleClearHistory}
               />
             ) : (
-              /* Clean Home View */
               <>
-                {/* 1. Revamped Hero Intro Card */}
-                <HeroIntroCard />
+                {/* ── CENTERED ROYAL BRAND HERO ─────────────────── */}
+                <div className="flex flex-col items-center justify-center pt-3 pb-1 gap-2 relative">
+                  {/* Ambient center glow */}
+                  <div className="absolute w-48 h-48 bg-purple-700/10 rounded-full blur-3xl pointer-events-none" />
 
-                {/* 2. Main Scan Trigger Card (CTA Box + Dual Modal) */}
+                  {/* Status badge */}
+                  <span className="relative inline-flex items-center gap-1.5 bg-[#1a1235]/80 border border-amber-500/30 text-amber-300 text-[10px] font-extrabold px-3.5 py-1 rounded-full uppercase tracking-widest shadow-sm">
+                    <Sparkles size={10} className="animate-pulse" />
+                    AI-Powered · 24/7 Available
+                  </span>
+
+                  {/* Glowing medical emblem */}
+                  <div className="relative mt-1">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 via-amber-500 to-yellow-500 p-[2.5px] shadow-xl shadow-amber-600/25 gold-glow">
+                      <div className="w-full h-full bg-[#0b0713] rounded-[14px] flex items-center justify-center">
+                        <Stethoscope size={30} className="text-amber-400" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Brand title */}
+                  <h2 className="text-3xl font-black tracking-widest bg-gradient-to-r from-amber-300 via-emerald-300 to-amber-400 bg-clip-text text-transparent drop-shadow-md leading-none mt-0.5">
+                    CHIKITSAK
+                  </h2>
+
+                  {/* Hindi subtitle */}
+                  <p className="font-devanagari text-amber-400/90 font-medium text-sm leading-none">
+                    चिकित्सक
+                  </p>
+
+                  {/* Tagline */}
+                  <p className="text-xs text-purple-300/70 tracking-widest uppercase font-semibold">
+                    Smart AI Medical Assistant
+                  </p>
+                </div>
+
+                {/* 2. Main Scan Trigger Card */}
                 <ScannerCard
-                  imageUrl={imageUrl}
                   isLoading={appState === 'loading'}
                   onImageSelected={handleImageSelected}
                 />

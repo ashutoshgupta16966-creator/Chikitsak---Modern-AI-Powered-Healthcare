@@ -27,7 +27,7 @@ export function fileToBase64(file) {
  */
 export async function analyzeImage(base64DataUri) {
   const controller = new AbortController();
-  const timeoutId  = setTimeout(() => controller.abort(), 35_000); // 35s timeout
+  const timeoutId  = setTimeout(() => controller.abort(), 60_000); // 60s timeout to handle Render cold-starts
 
   try {
     const response = await fetch(`${API_BASE}/api/analyze`, {
@@ -44,10 +44,9 @@ export async function analyzeImage(base64DataUri) {
     try {
       json = JSON.parse(responseText);
     } catch {
-      // Failed to parse JSON (server likely returned HTML error page or standard 404/500 text)
       console.error('[API Client] Non-JSON server response:', responseText.slice(0, 200));
       if (response.status === 404) {
-        throw new Error('API server route not found. Make sure backend server is running on port 3001.');
+        throw new Error('API server route not found. Make sure backend server is active.');
       }
       throw new Error(`Server returned status ${response.status} (${response.statusText}). Please check your backend connection.`);
     }
@@ -64,7 +63,7 @@ export async function analyzeImage(base64DataUri) {
     return json.data;
   } catch (err) {
     if (err.name === 'AbortError') {
-      throw new Error('Analysis timed out (35s). Please check your internet connection or try again.');
+      throw new Error('Analysis timed out (60s). The Render server may be waking up from sleep. Please try again.');
     }
     throw err;
   } finally {

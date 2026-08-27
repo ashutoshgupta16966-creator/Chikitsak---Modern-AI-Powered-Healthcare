@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { Camera, Upload, X, Sparkles, Image as ImageIcon, Scan } from 'lucide-react'
+import { Camera, Upload, X, Sparkles, Image as ImageIcon, Scan, Clock } from 'lucide-react'
 
 /**
  * ScannerCard – Main Scanner trigger box with Camera vs Gallery selection modal.
@@ -46,15 +46,23 @@ export default function ScannerCard({ imageUrl, isLoading, onImageSelected }) {
       <div className="relative rounded-2xl bg-white border-2 border-emerald-500/30 shadow-xl overflow-hidden text-slate-900">
         {isLoading ? (
           /* Loading State Overlay */
-          <div className="h-52 flex flex-col items-center justify-center bg-slate-900 p-4 text-center z-10">
+          <div className="min-h-56 flex flex-col items-center justify-center bg-slate-900 p-5 text-center z-10 space-y-2.5">
             <ScanLineAnimation />
-            <p className="text-emerald-300 text-sm font-extrabold mt-3 tracking-widest animate-pulse flex items-center gap-2">
+            <p className="text-emerald-300 text-sm font-extrabold tracking-widest animate-pulse flex items-center gap-2">
               <Sparkles size={16} className="text-emerald-400 animate-spin" />
               <span>Analyzing Medicine Image...</span>
             </p>
-            <p className="text-emerald-200/90 font-devanagari text-xs mt-1 font-semibold">
+            <p className="text-emerald-200/90 font-devanagari text-xs font-semibold">
               एआई स्कैन जारी है, कृपया प्रतीक्षा करें…
             </p>
+
+            {/* Cold Start User Notice */}
+            <div className="flex items-center justify-center gap-1.5 bg-emerald-950/80 border border-emerald-700/50 text-emerald-300 text-[11px] font-medium px-3 py-1.5 rounded-xl max-w-xs text-center shadow-inner mt-1">
+              <Clock size={13} className="text-emerald-400 shrink-0" />
+              <span className="font-devanagari leading-snug">
+                पहली बार में थोड़ा टाइम लग सकता है, सर्वर स्टार्ट हो रहा है…
+              </span>
+            </div>
           </div>
         ) : (
           /* Main Homepage Scan Action Trigger */

@@ -21,13 +21,18 @@ app.use(cors({
 app.use(express.json({ limit: '25mb' }));
 app.use(express.urlencoded({ extended: true, limit: '25mb' }));
 
+// ── Health-check & Keep-Alive endpoints ───────────────────────────────────
+app.get(['/api/health', '/ping', '/health'], (_req, res) => {
+  res.json({
+    status: 'ok',
+    service: 'Chikitsak AI Medical Assistant',
+    uptime: Math.floor(process.uptime()),
+    timestamp: new Date().toISOString(),
+  });
+});
+
 // ── API Routes ──────────────────────────────────────────────────────────────
 app.use('/api', analyzeRouter);
-
-// Health-check endpoint
-app.get('/api/health', (_req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
 
 // Fallback 404 handler for any unmatched /api/* requests (Always return JSON)
 app.all('/api/*', (_req, res) => {

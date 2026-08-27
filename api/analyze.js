@@ -31,6 +31,7 @@ export default async function handler(req, res) {
 
     // ── Validate input ──────────────────────────────────────────────────
     if (!image || typeof image !== 'string') {
+      console.warn('[Vercel Serverless] Missing or invalid image payload in request body');
       return res.status(400).json({
         success: false,
         error: 'Missing or invalid image payload. Please select or capture a medicine photo.',
@@ -44,6 +45,7 @@ export default async function handler(req, res) {
     if (image.startsWith('data:')) {
       const matches = image.match(/^data:([^;]+);base64,(.+)$/);
       if (!matches) {
+        console.warn('[Vercel Serverless] Failed to parse base64 data URI');
         return res.status(400).json({
           success: false,
           error: 'Invalid image format. Expected valid base64 data URI.',
@@ -56,6 +58,7 @@ export default async function handler(req, res) {
     // ── Validate MIME type ─────────────────────────────────────────────
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
     if (!allowedTypes.includes(mimeType.toLowerCase())) {
+      console.warn(`[Vercel Serverless] Unsupported MIME type received: ${mimeType}`);
       return res.status(400).json({
         success: false,
         error: `Unsupported image format (${mimeType}). Please upload JPG, PNG, WEBP, or HEIC image.`,
@@ -65,6 +68,7 @@ export default async function handler(req, res) {
     // ── Size check (~12MB decoded limit) ───────────────────────────────
     const approximateBytes = (base64Data.length * 3) / 4;
     if (approximateBytes > 12 * 1024 * 1024) {
+      console.warn(`[Vercel Serverless] Image exceeds 12MB limit: ${(approximateBytes / (1024 * 1024)).toFixed(2)}MB`);
       return res.status(413).json({
         success: false,
         error: 'Image size too large. Please upload an image under 10MB.',
@@ -79,7 +83,13 @@ export default async function handler(req, res) {
     return res.status(200).json({ success: true, data: analysis });
 
   } catch (err) {
-    console.error('[Vercel Serverless Error]', err);
+    console.error('[Vercel Serverless Error Details]:', {
+      name: err?.name,
+      message: err?.message,
+      status: err?.status,
+      stack: err?.stack,
+      rawError: String(err),
+    });
 
     let status = 500;
     let errorMessage = typeof err === 'string'

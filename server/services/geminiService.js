@@ -6,6 +6,7 @@ function getAIClient() {
   if (!_client) {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
+      console.error('[GeminiService] CRITICAL: GEMINI_API_KEY environment variable is not defined.');
       throw new Error('GEMINI_API_KEY is missing in environment variables');
     }
     _client = new GoogleGenAI({ apiKey });
@@ -60,7 +61,7 @@ REQUIRED JSON SCHEMA (return EXACTLY this structure, no extra fields):
 export async function analyzeMedicineImage(base64Image, mimeType) {
   const ai = getAIClient();
 
-  const primaryModel  = process.env.GEMINI_MODEL || 'gemini-3.6-flash';
+  const primaryModel  = process.env.GEMINI_MODEL || 'gemini-3.7-flash';
   const fallbackModel = 'gemini-3.5-flash-lite';
 
   const contents = [
@@ -74,6 +75,7 @@ export async function analyzeMedicineImage(base64Image, mimeType) {
   ];
 
   let rawText = null;
+  let usedModel = primaryModel;
 
   // ── Primary Model Attempt ────────────────────────────────────────────────
   try {
@@ -85,10 +87,15 @@ export async function analyzeMedicineImage(base64Image, mimeType) {
     rawText = typeof response.text === 'function' ? response.text() : response.text;
   } catch (primaryErr) {
     const pMsg = primaryErr?.message || String(primaryErr);
-    console.warn(`[GeminiService] Primary model (${primaryModel}) failed: ${pMsg}`);
+    console.error(`[GeminiService] Primary model (${primaryModel}) failed:`, {
+      error: pMsg,
+      status: primaryErr?.status,
+      stack: primaryErr?.stack,
+    });
 
     // If primary model failed and isn't already the fallback, try fallback model
     if (primaryModel !== fallbackModel) {
+      usedModel = fallbackModel;
       console.log(`[GeminiService] Retrying with fallback model: ${fallbackModel}`);
       try {
         const fallbackResponse = await ai.models.generateContent({
@@ -100,6 +107,11 @@ export async function analyzeMedicineImage(base64Image, mimeType) {
           : fallbackResponse.text;
       } catch (fallbackErr) {
         const fMsg = fallbackErr?.message || String(fallbackErr);
+        console.error(`[GeminiService] Fallback model (${fallbackModel}) ALSO failed:`, {
+          error: fMsg,
+          status: fallbackErr?.status,
+          stack: fallbackErr?.stack,
+        });
         throw new Error(`AI Analysis failed: ${fMsg || pMsg}`);
       }
     } else {
@@ -107,8 +119,9 @@ export async function analyzeMedicineImage(base64Image, mimeType) {
     }
   }
 
-  if (!rawText || typeof rawText !== 'string') {
-    throw new Error('Gemini API returned an empty or invalid text response.');
+  if (!rawText || typeof rawText !== 'string' || rawText.trim().length === 0) {
+    console.error(`[GeminiService] Model (${usedModel}) returned empty or non-string response:`, rawText);
+    throw new Error('Gemini API returned an empty response.');
   }
 
   // Strip markdown code fences if Gemini wraps output in ```json ... ```
@@ -121,16 +134,25 @@ export async function analyzeMedicineImage(base64Image, mimeType) {
   let parsed;
   try {
     parsed = JSON.parse(jsonText);
-  } catch {
+  } catch (jsonErr) {
+    console.error(`[GeminiService] JSON Parse Error from model (${usedModel}):`, {
+      parseError: jsonErr?.message,
+      rawOutputPreview: rawText.slice(0, 500),
+      rawOutputFullLength: rawText.length,
+    });
     throw new Error(`Failed to parse AI response as JSON: ${rawText.slice(0, 200)}`);
   }
 
   // Validate required fields
   const required = ['englishName', 'hindiName', 'expiryDate', 'daysLeft', 'expiryStatus', 'bimari', 'solution'];
-  for (const field of required) {
-    if (!(field in parsed)) {
-      throw new Error(`Missing required field (${field}) in AI response.`);
-    }
+  const missingFields = required.filter(field => !(field in parsed));
+  if (missingFields.length > 0) {
+    console.error(`[GeminiService] Missing required fields in AI response from ${usedModel}:`, {
+      missing: missingFields,
+      receivedKeys: Object.keys(parsed),
+      parsedObject: parsed,
+    });
+    throw new Error(`Missing required field (${missingFields[0]}) in AI response.`);
   }
 
   // Ensure default fallback values for optional arrays/fields

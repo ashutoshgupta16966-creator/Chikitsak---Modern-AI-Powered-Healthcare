@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { Camera, Image as ImageIcon, X, Sparkles, Scan, Clock, Zap } from 'lucide-react'
+import { Camera, Image as ImageIcon, X, Sparkles, Scan, Zap } from 'lucide-react'
 
 /**
  * ScannerCard – Royal dark glass scanner trigger with Camera vs Gallery modal.
@@ -48,13 +48,6 @@ export default function ScannerCard({ isLoading, onImageSelected }) {
             <p className="font-devanagari text-purple-300 text-xs font-semibold">
               एआई स्कैन जारी है, कृपया प्रतीक्षा करें…
             </p>
-            {/* Cold-start notice */}
-            <div className="flex items-center justify-center gap-1.5 bg-purple-950/80 border border-amber-500/20 text-amber-300 text-[11px] font-medium px-3 py-1.5 rounded-xl max-w-xs text-center shadow-inner">
-              <Clock size={12} className="text-amber-400 shrink-0" />
-              <span className="font-devanagari leading-snug">
-                पहली बार में थोड़ा टाइम लग सकता है, सर्वर स्टार्ट हो रहा है…
-              </span>
-            </div>
           </div>
         ) : (
           /* ── Main Scan Trigger ─────────────────────────────────────── */

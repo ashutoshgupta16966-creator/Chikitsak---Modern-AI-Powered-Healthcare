@@ -10,6 +10,7 @@ router.post('/analyze', async (req, res) => {
 
     // ── Validate input ──────────────────────────────────────────────────
     if (!image || typeof image !== 'string') {
+      console.warn('[/api/analyze] Missing or invalid image payload');
       return res.status(400).json({
         success: false,
         error: 'Missing or invalid image payload. Please select or capture a medicine photo.',
@@ -23,6 +24,7 @@ router.post('/analyze', async (req, res) => {
     if (image.startsWith('data:')) {
       const matches = image.match(/^data:([^;]+);base64,(.+)$/);
       if (!matches) {
+        console.warn('[/api/analyze] Invalid base64 format');
         return res.status(400).json({
           success: false,
           error: 'Invalid image format. Expected valid base64 data URI.',
@@ -35,6 +37,7 @@ router.post('/analyze', async (req, res) => {
     // ── Validate MIME type ─────────────────────────────────────────────
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
     if (!allowedTypes.includes(mimeType.toLowerCase())) {
+      console.warn(`[/api/analyze] Unsupported MIME type: ${mimeType}`);
       return res.status(400).json({
         success: false,
         error: `Unsupported image format (${mimeType}). Please upload JPG, PNG, WEBP, or HEIC image.`,
@@ -44,6 +47,7 @@ router.post('/analyze', async (req, res) => {
     // ── Size check (~12MB decoded limit) ───────────────────────────────
     const approximateBytes = (base64Data.length * 3) / 4;
     if (approximateBytes > 12 * 1024 * 1024) {
+      console.warn(`[/api/analyze] Image size exceeds 12MB limit: ${(approximateBytes / (1024 * 1024)).toFixed(2)}MB`);
       return res.status(413).json({
         success: false,
         error: 'Image size too large. Please upload an image under 10MB.',
@@ -58,7 +62,13 @@ router.post('/analyze', async (req, res) => {
     return res.status(200).json({ success: true, data: analysis });
 
   } catch (err) {
-    console.error('[/api/analyze Error]', err);
+    console.error('[/api/analyze Error Details]:', {
+      name: err?.name,
+      message: err?.message,
+      status: err?.status,
+      stack: err?.stack,
+      rawError: String(err),
+    });
 
     let status = 500;
     let errorMessage = typeof err === 'string'

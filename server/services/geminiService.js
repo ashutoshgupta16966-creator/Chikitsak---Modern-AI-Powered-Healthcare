@@ -61,7 +61,7 @@ export async function analyzeMedicineImage(base64Image, mimeType) {
   const ai = getAIClient();
 
   const primaryModel  = process.env.GEMINI_MODEL || 'gemini-3.6-flash';
-  const fallbackModel = 'gemini-2.5-flash';
+  const fallbackModel = 'gemini-3.5-flash-lite';
 
   const contents = [
     SYSTEM_PROMPT,
